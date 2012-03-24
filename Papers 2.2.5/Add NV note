@@ -1,0 +1,25 @@
+#!/usr/local/bin/ruby
+
+# February 6, 2012
+
+require 'appscript'
+require 'osax'
+
+papers = Appscript.app("Papers2")
+sys_events = Appscript.app("System Events")
+osax = OSAX.osax
+
+m_cite = /\{([^\}]+)\}/
+papers.activate
+sys_events.keystroke("c", :using => [:command_down, :option_down])
+sleep(0.2)
+citation = m_cite.match(osax.the_clipboard)[1]
+link_url = "nv://find/pnote:#{citation}"
+osax.set_the_clipboard_to( link_url )
+sys_events.keystroke("e", :using => :command_down)
+sys_events.keystroke("2", :using => :command_down)
+sys_events.keystroke("v", :using => :command_down)
+sys_events.keystroke("e", :using => :command_down)
+
+
+

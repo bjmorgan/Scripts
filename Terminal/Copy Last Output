@@ -1,0 +1,14 @@
+#!/usr/local/bin/ruby
+# February 8, 2012
+
+# Adapted from: http://www.leancrew.com/all-this/2011/11/last-output-from-terminal/
+
+require 'appscript'
+require 'osax'
+
+terminal = Appscript.app('/Applications/Utilities/Terminal.app')
+window_history = terminal.windows[0].selected_tab.history.get 
+
+capture = window_history.split('$ ')[-2].split("\n")[0..-2] # the captured array includes the last command
+capture.shift if capture.shift[0] == "!" # do not include the quoted command if issued as a history expansion
+OSAX.osax.set_the_clipboard_to( capture.join("\n") )

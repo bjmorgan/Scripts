@@ -1,0 +1,26 @@
+#!/usr/local/bin/ruby
+
+# February 6, 2012
+
+require 'appscript'
+require 'osax'
+
+papers = Appscript.app("Papers2")
+nva = Appscript.app("NValt")
+sys_events = Appscript.app("System Events")
+osax = OSAX.osax
+
+m_link = /pnote:[A-Za-z0-9_]+/
+
+papers.activate
+sys_events.keystroke("e", :using => :command_down)
+sys_events.keystroke("2", :using => :command_down)
+sleep(0.1)
+sys_events.keystroke("c", :using => :command_down)
+sleep(0.1)
+sys_events.keystroke("e", :using => :command_down)
+
+command = m_link.match(osax.the_clipboard)[0]
+nva.activate
+sys_events.keystroke("l", :using => :command_down)
+sys_events.keystroke(command)

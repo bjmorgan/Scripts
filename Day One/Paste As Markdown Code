@@ -1,0 +1,13 @@
+#!/usr/local/bin/ruby
+
+# January 4, 2012
+
+require 'appscript'
+require 'osax'
+
+sys_events = Appscript.app("System Events")
+osax = OSAX.osax
+
+osax.set_the_clipboard_to( osax.the_clipboard.split(/\r/).map{ |line| line.gsub(/^/,"    ") }.join("\n") )
+p osax.the_clipboard
+sys_events.keystroke('v', :using => :command_down ) # paste clipboard in current application

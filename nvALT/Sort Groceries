@@ -1,0 +1,46 @@
+#!/usr/local/bin/ruby
+# script for adding ingredients to Shared Groceries.txt
+# reads line of input from STDIN and strips bullets; designated as /[optional space][non-alphanumberic character][optional space]/
+# then places new ingredients before checked items produced by Listary
+
+# August 23, 2011
+
+require '/Users/ben/Dropbox/Shared/Scripts/shopping.rb'
+groceries_file = "/Users/ben/Dropbox/Notes/PlainText/Shared\ Groceries.txt" 
+
+# input = ARGF
+
+file = File.new(groceries_file, "r")
+to_buy, bought = [], []
+groceries = file.readlines
+file.close
+groceries.each do |item|
+    bought << item if /^\//.match(item)
+    to_buy << item if /^[A-Za-z0-9]/.match(item)
+end
+
+# input.each { |item| to_buy << item.sub( /^\s*\W\s*/, "" ) }
+
+file = File.new(groceries_file, "w")
+# file = STDOUT
+
+shopping = Shopping_Trip.new
+shop = Shop.new( "waitrose" )
+shop.import
+
+to_buy.each do |item| 
+  aisle_str = item.scan(/\[([^\]]*)/)
+  if aisle_str == [] then aisle = nil else aisle = aisle_str[0][0].to_sym end
+  food = /[A-Za-z0-9\-\/ ]*/.match(item).to_s.strip
+  shopping.add( food )
+  shop.update( aisle, food ) unless aisle == nil
+end
+
+shopping.basket.organise!( shop )
+shopping.basket.contents.each { |item| file.puts "#{item.string} [#{item.aisle_in( shop )}]" }
+file.puts
+file.puts bought
+
+shop.export
+
+file.close

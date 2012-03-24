@@ -1,0 +1,23 @@
+#!/usr/local/bin/ruby
+
+# December 14, 2011
+
+require 'appscript'
+require 'osax'
+
+sys_events = Appscript.app("System Events")
+texshop = Appscript.app("TeXShop")
+osax = OSAX.osax
+
+left_arrow = 28.chr
+right_arrow = 29.chr
+
+texshop.activate
+sys_events.keystroke(left_arrow, :using => :option_down )
+sys_events.keystroke(right_arrow, :using => [:option_down, :shift_down] )
+sys_events.keystroke('x', :using => :command_down )
+sleep(0.2)
+string = "\\#{osax.the_clipboard}{}"
+osax.set_the_clipboard_to( string )
+sys_events.keystroke('v', :using => :command_down )
+sys_events.keystroke(left_arrow)

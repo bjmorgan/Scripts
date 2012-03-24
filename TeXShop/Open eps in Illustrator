@@ -1,0 +1,36 @@
+#!/usr/local/bin/ruby
+
+# March 14, 2012
+
+require 'appscript'
+require 'osax'
+
+class String
+  
+  def is_eps?
+    eps_re = /[A-Za-z0-9\-_]+.eps/
+    if eps_re.match(self) then
+      return true
+    else
+      return false
+    end
+  end
+  
+end
+
+osax = OSAX.osax
+texshop = Appscript.app("TeXShop")
+sys_events = Appscript.app("System Events")
+illustrator = Appscript.app("Adobe Illustrator")
+
+texshop.activate
+path_re = /\/[A-Za-z0-9\- \/]*\//
+file = texshop.document.path.get[0]
+dir = path_re.match(file)
+eps = texshop.document.selection.content.get[0]
+unless eps.is_eps? then
+  osax.display_alert("'#{eps}' is not a .eps filename", :buttons => ["OK"])
+  exit(0)
+end
+filepath = MacTypes::Alias.path("#{dir}/Figures/#{eps}")
+illustrator.open( filepath )

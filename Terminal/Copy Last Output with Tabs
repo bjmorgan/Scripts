@@ -1,0 +1,12 @@
+#!/usr/local/bin/ruby
+# November 25, 2011
+
+require 'appscript'
+require 'osax'
+
+terminal = Appscript.app("/Applications/Utilities/Terminal.app")
+window_history = terminal.windows[0].selected_tab.history.get 
+
+OSAX.osax.set_the_clipboard_to( window_history.split('$ ')[-2].split("\n")[1...-1].collect{ |line| 
+  line.strip.gsub(/ +/, "\t" )
+}.join("\n") )

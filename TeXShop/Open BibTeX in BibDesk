@@ -1,0 +1,57 @@
+#!/usr/local/bin/ruby
+
+# March 14, 2012
+
+require 'appscript'
+require 'osax'
+
+class String
+  def is_citation?
+    cite_re = /[A-Za-z]+_[A-Za-z]+[0-9]+[a-z]*/
+    return cite_re.match(self) ? true : false
+  end  
+end
+
+def new_bibitem( cite_key )
+  return "@article{#{cite_key},
+author = {}
+}"
+end
+
+osax = OSAX.osax
+texshop = Appscript.app("TeXShop")
+sys_events = Appscript.app("System Events")
+bibdesk = Appscript.app("BibDesk")
+papers = Appscript.app("Papers2")
+whose = Appscript.its
+library = "/Users/ben/Documents/My Papers/Bibliography.bib"
+
+texshop.activate
+cite_key = texshop.document.selection.content.get[0]
+unless cite_key.is_citation? then
+  osax.display_alert("'#{cite_key}' is not a valid cite key", :buttons => ["Cancel"])
+  exit(0)
+end
+
+bibdesk.run unless bibdesk.is_running?
+bibdesk.open(MacTypes::Alias.path( library ) ) unless bibdesk.documents.count > 0 
+bibitem = bibdesk.document.publications[whose.cite_key.eq(cite_key)].get[0][0]
+if bibitem.nil? then
+  no_cite_key = osax.display_alert("'#{cite_key}' was not found in your BibDesk library", :buttons => ['New BibDesk Entry', 'Search in Papers', 'Cancel'])
+  case no_cite_key[:button_returned]
+  when 'Search in Papers'
+    papers.activate
+    osax.set_the_clipboard_to( cite_key )
+    sys_events.keystroke('l', :using => :command_down ) # switch to full library
+    sys_events.keystroke('f', :using => :command_down ) # focus on seach bar
+    sys_events.keystroke('v', :using => :command_down ) # paste cite_key into search bar
+    exit(0)
+  when 'New BibDesk Entry'
+    bibdesk.documents[1].import(:from => new_bibitem( cite_key ) )
+    bibitem = bibdesk.document.selection.get[0][0]
+  else
+    exit(0)
+  end
+end
+bibitem.show
+bibdesk.activate

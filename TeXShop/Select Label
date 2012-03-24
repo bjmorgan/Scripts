@@ -1,0 +1,28 @@
+#!/usr/local/bin/ruby
+
+# December 22, 2011
+
+require 'appscript'
+require 'osax'
+
+ref_command = "ref"
+sort_output = false
+save_before_run = true
+labels = []
+
+ts = Appscript.app("TeXShop")
+osax = OSAX.osax
+
+ts.documents[1].save() if save_before_run
+
+file = ts.document.path.get[0]
+
+filter = ts.document.selection.content.get[0]
+pattern = /label\{([^\}]*#{filter}[^\}]*)\}/
+
+File.new(file, 'r').readlines.each{ |line| line =~ pattern and labels << line.scan( pattern )[0][0] }
+labels.sort! if sort_output
+
+selection = osax.choose_from_list( labels, :with_prompt => "Choose the label of the reference to insert:" )[0]
+string = "\\#{ ref_command }\{#{ selection }\}"
+ts.document.selection.set( string )

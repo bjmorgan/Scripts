@@ -1,0 +1,27 @@
+#!/usr/local/bin/ruby
+# December 14, 2011
+
+require 'appscript'
+require 'osax'
+
+numbers = Appscript.app("Numbers.app")
+whose = Appscript.its
+
+sheets = numbers.documents[1].sheets.get
+p sheets
+stop
+to_paste = OSAX.osax.the_clipboard.split # Content to be pasted should be separated by spaces
+    
+sheets.each do |sheet|
+  sheet.tables.get.each do |table|
+    begin
+      $selection = table.selection_range.name.get.split(":")[0] # Not sure why $selection doesn't survive outside the do ; end loop unless it is global
+    rescue
+    end
+  end
+end
+
+# Assume that n data entries are being pasted into identical cells across the first n sheets of the current document
+sheets[0...number_of_sheets].each_with_index do |sheet, index|
+  sheet.tables[0].cells[ $selection ].value.set( to_paste[index] )
+end
