@@ -16,11 +16,15 @@ filepath = MacTypes::Alias.path( file )
 logfile = File.new( file, "r" ).readlines
 cite_warning = /Citation `([A-Za-z]+_[A-Za-z]+[0-9]+[a-z]*)'/
 cites_not_found = logfile.collect{ |line| cite_warning.match( line )[1] unless cite_warning.match( line ).nil? }.compact
-selection = osax.choose_from_list( cites_not_found, :with_prompt => "Undefined Citations:" )
-if selection then
-  osax.set_the_clipboard_to( selection[0] )
-  texshop.activate
-  sys_events.keystroke('f', :using => :command_down )
-  sys_events.keystroke('v', :using => :command_down )
-  sys_events.keystroke("\r")
+if cites_not_found.empty? then
+  osax.display_dialog( "No undefined citations.", :buttons => ["OK"] )
+else
+  selection = osax.choose_from_list( cites_not_found, :with_prompt => "#{cites_not_found.length} undefined Citations:" )
+  if selection then
+    osax.set_the_clipboard_to( selection[0] )
+    texshop.activate
+    sys_events.keystroke('f', :using => :command_down )
+    sys_events.keystroke('v', :using => :command_down )
+    sys_events.keystroke("\r")
+  end
 end
