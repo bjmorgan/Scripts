@@ -1,4 +1,4 @@
-#!/opt/local/bin/ruby
+#!/usr/local/bin/ruby
 # November 9, 2011
 # Extract server name and current path from a Terminal window, and open the same directory in a mounted volume, using Transmit
 
@@ -15,15 +15,16 @@ host = /@([A-Za-z]*)/.match( window_title )[1] # match e.g. host
 path = /\:([^^]*)/.match( window_title )[1]    # match e.g. ~/Files/subdir1/subdir2
 
 transmit.activate
-transmit.make( :new => :document )
+transmit.make( :new => :document ) if transmit.documents.get.empty?
 tab = transmit.documents[0].current_tab
 
 my_fave = transmit.favorites[ whose.name.eq( host ) ].items[1].get
 tab.connect( :to => my_fave, :mount => true )
 tab.close
 
-folder = path.sub( "~/" , "" )
+folder = path.sub( '~' , '' ).sub( /\/\Z/, '' )
 
+finder.make( :new => :Finder_window )
 window = finder.windows[1]
 
 # set view options for target window

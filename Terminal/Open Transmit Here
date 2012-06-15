@@ -14,9 +14,10 @@ host = /@([A-Za-z]*)/.match( window_title )[1] # match e.g. host
 path = /\:([^^]*)/.match( window_title )[1]    # match e.g. ~/Files/subdir1/subdir2
 
 transmit.activate
+my_fave = transmit.favorites[ whose.name.eq( host ) ].items[1].get
+
+transmit.documents[0].current_tab.close unless transmit.documents.get.empty?
 transmit.make( :new => :document )
 tab = transmit.documents[0].current_tab
-
-my_fave = transmit.favorites[ whose.name.eq( host ) ].items[1].get
 tab.connect( :to => my_fave )
 tab.remote_browser.change_location( :to_path => path )

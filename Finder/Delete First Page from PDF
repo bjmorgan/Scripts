@@ -1,0 +1,18 @@
+#!/usr/local/bin/ruby
+
+# April 19, 2012
+
+require 'appscript'
+require 'fileutils'
+
+finder = Appscript.app("Finder")
+
+sel = finder.selection.get(:result_type => :alias).map { |a|  a.path }
+
+sel.each do |old_file|
+  abort("#{old_file} is apparently not a PDF") if File.extname(old_file) != '.pdf'
+  new_file = old_file.chomp(File.extname(old_file)) + '_new.pdf'
+  `/usr/local/bin/pdftk #{old_file} cat 2-end output #{new_file}`
+  FileUtils.mv(new_file, old_file)
+end
+

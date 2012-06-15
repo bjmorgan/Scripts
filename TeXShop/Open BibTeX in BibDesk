@@ -28,6 +28,7 @@ library = "/Users/ben/Documents/My Papers/Bibliography.bib"
 
 texshop.activate
 cite_key = texshop.document.selection.content.get[0]
+exit if cite_key.empty?
 unless cite_key.is_citation? then
   osax.display_alert("'#{cite_key}' is not a valid cite key", :buttons => ["Cancel"])
   exit(0)

@@ -42,5 +42,6 @@ file.puts
 file.puts bought
 
 shop.export
+shop.export_to_yaml
 
 file.close

@@ -1,0 +1,13 @@
+#!/usr/local/bin/ruby
+
+require 'appscript'
+
+itunes = Appscript.app("iTunes.app")
+
+old_fi = itunes.fixed_indexing
+tracks = itunes.selection.get
+tracks.each do |track|
+  title = track.name.get
+  new_title = title.sub(/\- ([A-Za-z0-9 ]*)/,"(\\1)").sub('Original Mix','').sub(' ()','')
+  track.name.set( new_title )
+end

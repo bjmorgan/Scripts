@@ -3,7 +3,8 @@
 # March 14, 2012
 
 require 'appscript'
-require 'osax'
+
+graphics_paths = ['', 'Figures/']
 
 class String
   
@@ -18,19 +19,29 @@ class String
   
 end
 
-osax = OSAX.osax
 texshop = Appscript.app("TeXShop")
-sys_events = Appscript.app("System Events")
 illustrator = Appscript.app("Adobe Illustrator")
+illustrator.activate
 
-texshop.activate
+# get filename from current TeXshop selection
+
 path_re = /\/[A-Za-z0-9\- \/]*\//
 file = texshop.document.path.get[0]
 dir = path_re.match(file)
-eps = texshop.document.selection.content.get[0]
-unless eps.is_eps? then
-  osax.display_alert("'#{eps}' is not a .eps filename", :buttons => ["OK"])
-  exit(0)
+selection = texshop.document.selection.content.get[0]
+filename = selection.is_eps? ? selection : selection + '.eps'
+
+# check that this file exists in any directories listed in graphics_paths
+
+valid_paths = graphics_paths.collect do |path|
+   filepath = dir.to_s + path + filename
+   File.exists?(filepath) ? filepath : nil
+end.compact
+abort("File not found") if valid_paths.empty?
+
+filepath = MacTypes::Alias.path( valid_paths[0] )
+begin
+  illustrator.open( filepath )
+rescue
+  abort("Illustrator has failed to open #{filename}")
 end
-filepath = MacTypes::Alias.path("#{dir}/Figures/#{eps}")
-illustrator.open( filepath )

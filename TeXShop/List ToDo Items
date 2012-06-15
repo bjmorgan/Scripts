@@ -1,0 +1,41 @@
+#!/usr/local/bin/ruby
+
+# March 29, 2012
+
+require 'appscript'
+require 'osax'
+
+class String
+  def clip
+    max_length = 99
+    self.length > max_length ? self[0...max_length].sub(/[^ ]+$/, '') : self
+  end
+end
+
+osax = OSAX.osax
+texshop = Appscript.app("TeXShop")
+sys_events = Appscript.app("System Events")
+
+texshop.activate
+path_re = /\/[A-Za-z0-9\- \/]*\//
+file = texshop.document.path.get[0]
+filename = File.basename( file )
+
+texfile = File.new( file, 'r' ).readlines
+re = /\\todo{([^}]*)}/
+todo = []
+texfile.each_with_index do |line, line_number| 
+  matches = line.scan( re )
+  matches.each { |string| todo << "#{line_number+1}: #{string[0].clip}" } unless matches.empty?
+end
+selection = osax.choose_from_list( todo, :with_prompt => "#{todo.length} todo items:", :with_title => filename )
+
+p selection
+left_arrow = 28.chr
+
+if selection then
+  texshop.activate
+  line_number, string = /([0-9]+): (.*)/.match( selection[0] )[1..2]
+  sys_events.keystroke('l', :using => :command_down)
+  sys_events.keystroke( line_number + "\r" )
+end

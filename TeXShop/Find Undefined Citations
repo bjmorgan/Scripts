@@ -17,14 +17,16 @@ logfile = File.new( file, "r" ).readlines
 cite_warning = /Citation `([A-Za-z]+_[A-Za-z]+[0-9]+[a-z]*)'/
 cites_not_found = logfile.collect{ |line| cite_warning.match( line )[1] unless cite_warning.match( line ).nil? }.compact
 if cites_not_found.empty? then
-  osax.display_dialog( "No undefined citations.", :buttons => ["OK"] )
+  osax.display_dialog( "No undefined citations.", 
+    :buttons => ["OK"], 
+    :default_button => 1, 
+    :with_icon => :note )
 else
-  selection = osax.choose_from_list( cites_not_found, :with_prompt => "#{cites_not_found.length} undefined Citations:" )
+  selection = osax.choose_from_list( cites_not_found, 
+    :with_prompt => "#{cites_not_found.length} undefined Citations:" )
   if selection then
-    osax.set_the_clipboard_to( selection[0] )
     texshop.activate
     sys_events.keystroke('f', :using => :command_down )
-    sys_events.keystroke('v', :using => :command_down )
-    sys_events.keystroke("\r")
+    sys_events.keystroke( selection[0] + "\r" )
   end
 end

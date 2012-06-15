@@ -1,0 +1,41 @@
+#!/usr/local/bin/ruby
+
+# April 20, 2012
+
+require 'rubygems'
+require 'appscript'
+require 'osax'
+require 'fileutils'
+
+def filename_from_dialog( current_filename )
+  begin
+    input = OSAX.osax.display_dialog( "Enter filename:", 
+      :default_answer => current_filename, 
+      :buttons => ['Cancel', 'Copy'], 
+      :default_button => 'Copy' )
+  rescue
+    exit
+  end
+  new_filename = input[:text_returned]
+  new_filename << '.pdf' unless /\.pdf\Z/.match(new_filename) # ensure .pdf at end of filename 
+  return new_filename
+end
+
+def file_from_papers # returns [path,filename] for selected item
+  papers = Appscript.app("/Applications/Papers2.app")
+  finder = Appscript.app("Finder.app")
+  system_events = Appscript.app("System Events.app")
+  
+  papers.activate
+  system_events.keystroke( 'r', :using => [:command_down, :option_down] ) # Reveal File in Finder
+  sleep(0.2)
+  path = finder.selection.get(:result_type => :alias)[0].path
+  finder.windows[1].close
+  current_filename = /[A-Za-z0-9_\.]+\.pdf\Z/.match(path)[0]
+  return path, current_filename
+end
+
+to_read_dir = '/Users/ben/Dropbox/To Read/'
+path, current_filename = file_from_papers    
+filename_out = filename_from_dialog( current_filename )
+FileUtils.cp( path, to_read_dir + filename_out )

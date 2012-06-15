@@ -1,0 +1,11 @@
+#!/usr/local/bin/ruby
+
+# May 10, 2012
+
+require 'appscript'
+
+sys_events = Appscript.app("System Events.app")
+
+sys_events.keystroke("o", :using => [:command_down, :option_down])
+sleep(0.3)
+sys_events.keystroke("2", :using => [:command_down, :option_down])

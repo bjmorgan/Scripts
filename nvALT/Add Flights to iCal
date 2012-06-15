@@ -1,0 +1,86 @@
+#!/usr/local/bin/ruby
+
+# April 4, 2012
+
+require 'appscript'
+require 'date'
+require 'osax'
+
+nvalt = Appscript.app("nvalt")
+sys_events = Appscript.app"System Events"
+osax = OSAX.osax
+
+class Flight
+  
+  attr_accessor :origin, :destination, :event, :flight_number, :notes
+
+  def initialize
+    @origin = nil
+    @destination = nil
+    @event = nil
+    @summary = nil
+    @departure_time = nil
+    @arrival_time = nil
+    @flight_number = nil
+    @notes = []
+  end
+  
+  def arrival_time=( string )
+    @arrival_time = DateTime.parse( string )
+  end
+  
+  def departure_time=( string )
+    @departure_time = DateTime.parse( string )
+  end
+  
+  def description
+    return "Arrives at #{@arrival_time.strftime("%H:%M")} local time\nFlight number: #{@flight_number}\n#{@notes.join("\n")}"
+  end
+  
+  def output
+    ical = Appscript.app("iCal")
+    ical.activate
+    ical.calendars["Flights"].end.make(
+      :new => :event, 
+      :with_properties => {
+      :start_date => @departure_time, 
+      :end_date => @arrival_time,
+      :summary => @event, 
+      :description => description,
+      :location => @origin } )
+  end
+
+end
+
+nvalt.activate
+sys_events.keystroke("a", :using => :command_down)
+sys_events.keystroke("c", :using => :command_down)
+
+flights_data = osax.the_clipboard.split("\r\r").collect{ |entry| entry.split"\r" unless entry.empty? }
+
+flights_data.delete_if { |element| element.empty? }
+
+re_event = /([A-Za-z\(\) ]+) to ([A-Za-z\(\) ]+)/
+re_departure = /Dep[a-z]* (.*)/
+re_arrival = /Arr[a-z]* (.*)/
+re_flight = /Flight ([A-Za-z0-9]+)/
+
+flights_data.each do |flight|
+  this_flight = Flight.new
+  flight.each do |line| line
+    case line
+    when re_event
+      this_flight.event = "Flight from #{$1} to #{$2}"
+      this_flight.origin, this_flight.destination = $1, $2
+    when re_departure
+      this_flight.departure_time = $1
+    when re_arrival
+      this_flight.arrival_time = $1
+    when re_flight
+      this_flight.flight_number = $1
+    else
+      this_flight.notes << line unless line.empty?
+    end
+  end
+  this_flight.output
+end

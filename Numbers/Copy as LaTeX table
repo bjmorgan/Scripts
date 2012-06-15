@@ -1,0 +1,60 @@
+#!/usr/local/bin/ruby
+
+# require 'osax'
+# osax = OSAX.osax
+
+def osascript( script )
+  %x{/usr/bin/osascript -e \'#{script}\'}
+end
+
+class Line
+  
+  @@max_length = nil
+  @@eol = ' \\\\'
+  
+  def initialize( data )
+    @contents = data
+    @@max_length = [0]*@contents.size if @@max_length.nil? # initialize array if this is the first Line instance
+    @contents.each_with_index{ |element, i| @@max_length[i] = [element.length, @@max_length[i]].max } # update column widths
+  end
+  
+  def to_tex
+    @contents.zip( @@max_length ).collect { |entry, length| entry.ljust(length).sub(/ \|$/,'').gsub('&','\\\&') }.join(' & ') + @@eol
+  end
+  
+  def define_format
+    @contents.inject('|'){ |string, entry| /\|/.match(entry) ?  string + 'c|' : string + 'c' } + '|'
+  end
+    
+end
+
+table_header = <<END
+\\begin{table}[htb]
+\\begin{center}
+\\begin{tabular}{FORMAT} \\hline
+END
+
+table_footer = <<END
+ \\hline
+\\end{tabular}
+\\caption{\\label{tab:NEW_LABEL}CAPTION}
+\\end{center}
+\\end{table}
+END
+
+copy_selection_from_numbers = <<END
+tell application "Numbers" to activate
+tell application "System Events" 
+  keystroke "c" using command down
+  delay 0.1
+  return the clipboard
+end tell
+END
+
+contents = osascript(copy_selection_from_numbers).split(/[\n\r]/).collect{ |line| Line.new( line.split(/\t/) )}
+
+output = table_header.sub('FORMAT', contents[0].define_format) 
+output << contents.collect{ |line| line.to_tex }.join("\n")
+output << table_footer
+
+IO.popen('pbcopy', 'w').print output

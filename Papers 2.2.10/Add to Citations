@@ -1,0 +1,24 @@
+#!/usr/local/bin/ruby
+
+require 'appscript'
+require 'osax'
+
+system_events = Appscript.app("System Events.app")
+osax = OSAX.osax
+
+class String
+  def get_title
+    return self.scan(/\[\"([A-Za-z 0-9\-\_]+)\"\]/)[-1][0]
+  end
+end
+
+list = system_events.processes["Papers2"].menu_bars[1].menu_bar_items["Paper"].menus["Paper"].menu_items["Add to Collection"].menus["Add to Collection"].menu_items["Citations"].menus["Citations"].menu_items.get
+
+options = list.inject({}) do |result, paper| 
+  result[ paper.to_s.get_title ] = paper
+  result
+end
+
+selection = osax.choose_from_list( options.keys, :with_prompt => "Add paper to:" )
+exit unless selection
+options[ selection[0] ].click

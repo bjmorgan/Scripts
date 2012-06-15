@@ -1,0 +1,23 @@
+#!/usr/local/bin/ruby
+
+# April 17, 2012
+
+require 'appscript'
+require 'osax'
+
+se = Appscript.app("System Events")
+reeder = Appscript.app("Reeder")
+osax = OSAX.osax
+
+copy_link = 'l' # "Copy Link" service has already been assigned in the Reeder preferences
+
+notes_dir = "/Users/ben/Dropbox/Notes/PlainText"
+to_read_file = "\#\ To\ Read.txt"
+filename = notes_dir + '/' + to_read_file
+
+reeder.activate
+
+se.keystroke("#{copy_link}" + 'j') # copy link and move to next item 
+
+open(filename, 'a') { |f| f.puts osax.the_clipboard }
+
