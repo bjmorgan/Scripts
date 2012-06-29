@@ -28,10 +28,10 @@ def file_from_papers # returns [path,filename] for selected item
   
   papers.activate
   system_events.keystroke( 'r', :using => [:command_down, :option_down] ) # Reveal File in Finder
-  sleep(0.2)
+  sleep(0.3)
   path = finder.selection.get(:result_type => :alias)[0].path
   finder.windows[1].close
-  current_filename = /[A-Za-z0-9_\.]+\.pdf\Z/.match(path)[0]
+  current_filename = /[A-Za-z0-9_\.\-]+\.pdf\Z/.match(path)[0]
   return path, current_filename
 end
 

@@ -1,4 +1,4 @@
-#!/opt/local/bin/ruby
+#!/usr/local/bin/ruby
 # December 14, 2011
 
 require 'appscript'
