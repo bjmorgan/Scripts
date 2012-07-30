@@ -5,22 +5,27 @@ require 'appscript'
 require 'osax'
 
 numbers = Appscript.app("Numbers.app")
+document = numbers.documents[1]
 whose = Appscript.its
 
-sheets = numbers.documents[1].sheets.get
-to_paste = OSAX.osax.the_clipboard.split(/[\n\r]/) # Content to be pasted should be separated by line breaks
-number_of_sheets = to_paste.length
-    
-sheets.each do |sheet|
-  sheet.tables.get.each do |table|
-    begin
-      $selection = table.selection_range.name.get.split(":")[0] # Not sure why $selection doesn't survive outside the do ; end loop unless it is global
-    rescue
-    end
-  end
+def get_focus_from( document ) # returns the string index of the currently selected cell (e.g. "B32")
+  whose = Appscript.its
+  selection_array = document.sheets.tables[whose.selection_range.name.eq(:missing_value).not].selection_range.name.get
+  selection_array.delete_if{ |e| e.empty? }[0][0].split(":")[0]
 end
 
+sheets = document.sheets.get
+to_paste = OSAX.osax.the_clipboard.split(/[\n\r]/) # Content to be pasted should be separated by line breaks
+data_length = to_paste.length
+number_of_sheets = document.sheets.name.get.delete_if{ |e| e =~ /[Pp]lot/ }.length
+if data_length > number_of_sheets
+  OSAX.osax.display_dialog("The number of data elements exceeds the number of valid sheets.", :with_icon => :caution, :buttons => "OK", :default_button => 1)
+  exit
+end
+
+selection = get_focus_from(document)
+
 # Assume that n data entries are being pasted into identical cells across the first n sheets of the current document
-sheets[0...number_of_sheets].each_with_index do |sheet, index|
-  sheet.tables[0].cells[ $selection ].value.set( to_paste[index] )
+sheets[0...data_length].each_with_index do |sheet, index|
+  sheet.tables[0].cells[ selection ].value.set( to_paste[index] )
 end

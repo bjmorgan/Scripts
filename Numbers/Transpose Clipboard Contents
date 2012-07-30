@@ -1,0 +1,15 @@
+#!/usr/local/bin/ruby
+
+# July 1, 2012
+
+require 'osax'
+require '/Users/ben/Documents/Code/Ruby/Array2D.rb'
+
+clipboard = OSAX.osax.the_clipboard
+data = clipboard.split("\r").map{ |row| row.split("\t") }
+columns = data[0].size
+rows = data.size
+
+matrix = Array2D.new( rows, columns ).fill( data )
+string_out = matrix.transpose.to_1D_array.collect{ |i| i.join("\t")}.join("\n")
+OSAX.osax.set_the_clipboard_to( string_out )
