@@ -1,0 +1,21 @@
+#!/usr/local/bin/ruby
+
+# September 19, 2012
+
+require 'appscript'
+
+def run_command_in_frontmost_window( cmd )
+	terminal = Appscript.app('Terminal.app')
+  terminal.do_script( cmd, :in => terminal.windows[1] )
+end
+
+def open_new_window_with_same_command
+  Appscript.app("System Events").keystroke('n', :using => [:command_down, :control_down] )
+end    
+
+topmost_window = Appscript.app('Terminal.app').windows[0]
+dir_re = /\/(.*\Z)/
+title_string = topmost_window.custom_title.get
+current_directory = title_string.match( dir_re ).nil? ? nil : title_string.match( dir_re )[1]
+open_new_window_with_same_command
+run_command_in_frontmost_window( "cd #{current_directory}" ) unless current_directory.nil?
