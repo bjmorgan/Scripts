@@ -1,0 +1,11 @@
+#!/usr/local/bin/ruby
+
+require 'appscript'
+require 'osax'
+
+se = Appscript.app("System Events.app")
+osax = OSAX.osax
+
+se.keystroke('c', :using => :command_down)
+osax.set_the_clipboard_to( "<sup>#{osax.the_clipboard}</sup>" )
+se.keystroke('v', :using => :command_down)

@@ -1,0 +1,47 @@
+#!/usr/local/bin/ruby
+
+# December 22, 2011
+
+require 'appscript'
+require 'osax'
+require 'fileutils'
+
+
+def get_finder_path
+  
+  script = <<eos
+tell application "Finder"
+  selection as alias
+end tell
+eos
+  
+  p script
+  puts %x{osascript -e #{script}}
+  # finder = Appscript.app("Finder")
+  # return finder.selection.get(:result_type => :alias)[0].path.split("/")[0...-1].join("/")
+end
+
+def old_tex_file( name )
+  return "#{name}/paper.tex"
+end
+
+def new_tex_file( name )
+  return "#{name}/#{name.tr(' ','_')}.tex"
+end
+
+p get_finder_path
+exit
+template = "/Users/ben/Documents/My\ Papers/\.Template"
+
+osax = OSAX.osax
+da = "New Paper"
+begin
+  name = osax.display_dialog("Enter Project Name:", :with_title => "New LaTeX Project from Template", :default_answer => da)[:text_returned]
+rescue 
+  exit
+end
+
+path = get_finder_path
+
+FileUtils.cp_r( template, path+"/"+name )
+FileUtils.mv( path+"/"+old_tex_file(name), path+"/"+new_tex_file(name) )

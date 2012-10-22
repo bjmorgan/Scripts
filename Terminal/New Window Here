@@ -1,7 +1,5 @@
 #!/usr/local/bin/ruby
 
-# September 19, 2012
-
 require 'appscript'
 
 def run_command_in_frontmost_window( cmd )
